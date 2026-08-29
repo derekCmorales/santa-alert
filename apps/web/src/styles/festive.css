@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-poppins: "Poppins", sans-serif;
+  --color-xmas-red: #e41a2a;
+  --color-xmas-red-hover: #c41525;
+  --color-xmas-gold: #c9a227;
+  --color-xmas-cream: #fffbf8;
+  --color-xmas-green: #1e5631;
+  --color-xmas-green-dark: #0d2e19;
+  --color-xmas-ink: #1a0a0a;
+  --color-xmas-muted: #616161;
+}
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(-12px) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(12px);
+    opacity: 0;
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes check-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-snowfall {
+  animation: snowfall linear infinite;
+}
+
+.animate-float-up {
+  animation: float-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-check-pop {
+  animation: check-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-snowfall,
+  .animate-float-up,
+  .animate-check-pop {
+    animation: none;
+  }
+}
+
+.festive-page {
+  font-family: "Poppins", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.festive-forest-bg {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(201, 162, 39, 0.08), transparent 50%),
+    var(--color-xmas-green-dark);
+}
+
+.festive-cream-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(228, 26, 42, 0.04), transparent 60%),
+    var(--color-xmas-cream);
+}
+
+.festive-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.festive-snowflake {
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+}
+
+.festive-card-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 24px 48px -12px rgba(13, 46, 25, 0.22);
+}
+
+.festive-input {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.festive-input:focus {
+  border-color: rgba(228, 26, 42, 0.35);
+  box-shadow: 0 0 0 3px rgba(228, 26, 42, 0.12);
+}
