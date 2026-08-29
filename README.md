@@ -14,6 +14,201 @@ Clean Architecture (Fig. 8.2 / 8.3 de *Clean Architecture*):
 
 Documentación detallada en [`docs/`](docs/).
 
+### Flujo de registro (secuencia)
+
+```mermaid
+sequenceDiagram
+  actor Elfo
+  participant View as FastifyJsonView
+  participant Ctrl as RegisterElfController
+  participant Gen as RegisterElfGenerator
+  participant JsonP as JsonRegisterPresenter
+  participant LetterP as AcceptanceLetterPresenter
+  participant Mail as MailView
+
+  Elfo->>View: POST /auth/register
+  View->>Ctrl: handle(input)
+  Ctrl->>Gen: execute(Request DS)
+  Gen-->>Ctrl: Response DS
+  Ctrl->>JsonP: present(response)
+  JsonP->>View: JSON View Model
+  alt outcome ACCEPTED
+    Ctrl->>LetterP: present(response)
+    LetterP->>Mail: Letter View Model
+  end
+```
+
+### Diagrama de clases — Registro (Fig. 8.2)
+
+```mermaid
+classDiagram
+  direction LR
+
+  class RegisterElfController {
+    -requester: RegisterElfRequester
+    -jsonPresenter: JsonRegisterPresenter
+    -letterPresenter: AcceptanceLetterPresenter
+    +handle(httpInput) void
+  }
+
+  class RegisterElfRequester {
+    <<interface>>
+    +execute(request) RegisterElfResponse
+  }
+  class RegisterElfRequest {
+    <<DS>>
+    +email: string
+    +password: string
+    +displayName: string
+  }
+  class RegisterElfResponse {
+    <<DS>>
+    +outcome: ACCEPTED | DUPLICATE_SILENT
+    +email: string
+    +rawVerificationToken: string
+  }
+  class RegisterElfGenerator {
+    +execute(request) RegisterElfResponse
+  }
+  class ElfAccountGateway {
+    <<interface>>
+    +findByEmail(email) Elf
+    +save(elf) void
+  }
+  class CryptoGateway {
+    <<interface>>
+    +hashPassword(plain) string
+    +generateVerificationToken() GeneratedToken
+    +hashVerificationToken(raw) string
+    +now() Date
+  }
+  class Elf {
+    +register() Elf
+    +verify(now) Elf
+    +assertCanLogin() void
+  }
+  class Email {
+    <<VO>>
+    +create(raw) Email
+  }
+  class AccountStatus {
+    <<enumeration>>
+    UNVERIFIED
+    VERIFIED
+  }
+
+  class ElfAccountMapper {
+    +findByEmail(email) Elf
+    +save(elf) void
+  }
+  class SqliteElfDatabase {
+    +elfAccount: Table
+  }
+
+  class JsonRegisterPresenter {
+    +present(response) void
+  }
+  class RegisterJsonViewModel {
+    <<DS>>
+    +success: boolean
+    +data: object
+  }
+  class JsonView {
+    <<interface>>
+    +render(model) void
+  }
+  class FastifyJsonView {
+    +render(model) void
+  }
+
+  class AcceptanceLetterPresenter {
+    +present(response) void
+  }
+  class LetterViewModel {
+    <<DS>>
+    +to: string
+    +subject: string
+    +html: string
+  }
+  class MailView {
+    <<interface>>
+    +render(model) void
+  }
+  class ResendMailView {
+    +render(model) void
+  }
+  class ConsoleMailView {
+    +render(model) void
+  }
+
+  RegisterElfController --> RegisterElfRequester
+  RegisterElfController --> JsonRegisterPresenter
+  RegisterElfController --> AcceptanceLetterPresenter
+  RegisterElfGenerator ..|> RegisterElfRequester
+  RegisterElfGenerator --> ElfAccountGateway
+  RegisterElfGenerator --> CryptoGateway
+  RegisterElfGenerator --> Elf
+  Elf --> AccountStatus
+  Elf --> Email
+  ElfAccountMapper ..|> ElfAccountGateway
+  ElfAccountMapper --> SqliteElfDatabase
+  JsonRegisterPresenter --> JsonView
+  FastifyJsonView ..|> JsonView
+  AcceptanceLetterPresenter --> MailView
+  ResendMailView ..|> MailView
+  ConsoleMailView ..|> MailView
+```
+
+Más diagramas (componentes, login, verify): [`docs/class-diagram.md`](docs/class-diagram.md) · [`docs/component-diagram.md`](docs/component-diagram.md)
+
+### Componentes empaquetados (Fig. 8.2)
+
+```mermaid
+flowchart TB
+  subgraph ControllerComponent [Controller component]
+    RegisterElfController
+    LoginElfController
+    VerifyElfController
+    WorkshopController
+  end
+
+  subgraph InteractorComponent [Interactor component]
+    Generators["*Generator"]
+    GatewaysI["Gateway interfaces"]
+    Entities["Entities"]
+  end
+
+  subgraph DatabaseComponent [Database component]
+    ElfAccountMapper
+    Argon2CryptoGateway
+    PrismaSQLite
+  end
+
+  subgraph JsonPresenterComponent [JSON Presenter component]
+    JsonPresenters["Json*Presenter"]
+    JsonViewI["JsonView interface"]
+  end
+
+  subgraph LetterPresenterComponent [Letter Presenter component]
+    AcceptanceLetterPresenter
+    MailViewI["MailView interface"]
+  end
+
+  subgraph ViewLayer [View layer]
+    FastifyJsonView
+    ResendMailView
+    ConsoleMailView
+    ReactApp
+  end
+
+  ControllerComponent --> InteractorComponent
+  DatabaseComponent --> InteractorComponent
+  JsonPresenterComponent --> ControllerComponent
+  LetterPresenterComponent --> ControllerComponent
+  ViewLayer --> JsonPresenterComponent
+  ViewLayer --> LetterPresenterComponent
+```
+
 ## Requisitos
 
 - Node.js 20+
