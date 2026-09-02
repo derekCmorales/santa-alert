@@ -39,4 +39,4 @@ El token crudo **nunca** se incluye en el JSON de la API. Solo viaja en el `Regi
 
 ## Vista previa en desarrollo
 
-Con `MAIL_DRIVER=console`, el link de verificación se imprime en la terminal del API al registrar un elfo.
+Con `MAIL_DRIVER=console`, el link de verificación se imprime en la terminal del API al registrar un elfo. Con `MAIL_DRIVER=mailjet` o `resend`, la misma carta sale por el adapter elegido (`MailView`).

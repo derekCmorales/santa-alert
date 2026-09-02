@@ -18,8 +18,7 @@ import { JsonLoginPresenter } from "../presenters/json/JsonLoginPresenter.js";
 import { JsonRegisterPresenter } from "../presenters/json/JsonRegisterPresenter.js";
 import { JsonVerifyPresenter } from "../presenters/json/JsonVerifyPresenter.js";
 import { JsonWorkshopPresenter } from "../presenters/json/JsonWorkshopPresenter.js";
-import { ConsoleMailView } from "../views/mail/ConsoleMailView.js";
-import { ResendMailView } from "../views/mail/ResendMailView.js";
+import { createMailView, parseMailDriver, type MailDriver } from "../views/mail/createMailView.js";
 import type { MailView } from "../presenters/acceptance-letter/MailView.js";
 
 export interface AppConfig {
@@ -27,7 +26,9 @@ export interface AppConfig {
   appBaseUrl: string;
   emailFrom: string;
   resendApiKey?: string;
-  mailDriver: "console" | "resend";
+  mailjetApiKey?: string;
+  mailjetApiSecret?: string;
+  mailDriver: MailDriver;
 }
 
 export interface AppControllers {
@@ -53,11 +54,7 @@ export function buildControllers(
   const tokenIssuer = new JoseSessionTokenIssuer(config.jwtSecret);
   const tokenVerifier = new JoseSessionTokenVerifier(tokenIssuer);
 
-  const mailView =
-    mailViewOverride ??
-    (config.mailDriver === "resend" && config.resendApiKey
-      ? new ResendMailView(config.resendApiKey)
-      : new ConsoleMailView());
+  const mailView = mailViewOverride ?? createMailView(config);
 
   const letterPresenter = new AcceptanceLetterPresenter(mailView, {
     appBaseUrl: config.appBaseUrl,
@@ -96,11 +93,7 @@ export function buildRegisterController(
   const gateway = new ElfAccountMapper(db);
   const registerGenerator = new RegisterElfGenerator(gateway, crypto);
 
-  const mail =
-    mailView ??
-    (config.mailDriver === "resend" && config.resendApiKey
-      ? new ResendMailView(config.resendApiKey)
-      : new ConsoleMailView());
+  const mail = mailView ?? createMailView(config);
 
   return new RegisterElfController(
     registerGenerator,
@@ -163,11 +156,23 @@ export function loadConfig(): AppConfig {
     throw new Error("JWT_SECRET must be set and at least 16 characters.");
   }
 
+  const mailDriver = parseMailDriver(process.env.MAIL_DRIVER);
+  const mailjetApiKey = process.env.MAILJET_API_KEY;
+  const mailjetApiSecret = process.env.MAILJET_API_SECRET;
+
+  if (mailDriver === "mailjet" && (!mailjetApiKey || !mailjetApiSecret)) {
+    throw new Error(
+      "MAILJET_API_KEY and MAILJET_API_SECRET must be set when MAIL_DRIVER=mailjet.",
+    );
+  }
+
   return {
     jwtSecret,
     appBaseUrl: process.env.APP_BASE_URL ?? "http://localhost:5173",
     emailFrom: process.env.EMAIL_FROM ?? "North Pole HR <onboarding@resend.dev>",
     resendApiKey: process.env.RESEND_API_KEY,
-    mailDriver: process.env.MAIL_DRIVER === "resend" ? "resend" : "console",
+    mailjetApiKey,
+    mailjetApiSecret,
+    mailDriver,
   };
 }

@@ -10,6 +10,7 @@ flowchart BT
     FastifyJsonView
     ReactPortal["React Portal"]
     ResendMailView
+    MailjetMailView
     ConsoleMailView
   end
 
@@ -53,6 +54,7 @@ flowchart BT
   FastifyJsonView --> JsonWorkshopPresenter
   ReactPortal --> FastifyJsonView
   ResendMailView --> AcceptanceLetterPresenter
+  MailjetMailView --> AcceptanceLetterPresenter
   ConsoleMailView --> AcceptanceLetterPresenter
 
   JsonRegisterPresenter --> RegisterElfController
@@ -126,6 +128,7 @@ flowchart TB
   subgraph ViewLayer [View layer]
     FastifyJsonView
     ResendMailView
+    MailjetMailView
     ConsoleMailView
     ReactApp
   end
