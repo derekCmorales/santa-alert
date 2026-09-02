@@ -3,7 +3,7 @@ import { AccountStatus } from "../entities/AccountStatus.js";
 import { Email } from "../entities/Email.js";
 import { Elf } from "../entities/Elf.js";
 import { ElfId } from "../entities/ElfId.js";
-import type { ElfAccountGateway } from "../../interactors/shared/ElfAccountGateway.js";
+import type { ElfAccountGateway } from "../interactors/shared/ElfAccountGateway.js";
 
 export class ElfAccountMapper implements ElfAccountGateway {
   constructor(private readonly db: PrismaClient) {}

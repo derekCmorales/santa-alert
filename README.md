@@ -10,7 +10,7 @@ Clean Architecture (Fig. 8.2 / 8.3 de *Clean Architecture*):
 - **Controller**: orquesta Request/Response `<DS>` y presenters
 - **Presenters**: JSON (web) y Carta de Aceptación (correo)
 - **Views**: Fastify HTTP, Resend, Mailjet, consola (dev)
-- **Database**: `ElfAccountMapper` + SQLite
+- **Database**: `ElfAccountMapper` (Prisma/SQLite) + `PgliteElfAccountMapper` (PostgreSQL embebido)
 
 Documentación detallada en [`docs/`](docs/). OCP parte 1 y 2: [`docs/ocp-parte-2.md`](docs/ocp-parte-2.md). OCP parte 3 (Mailjet): [`docs/ocp-parte-3-mailjet.md`](docs/ocp-parte-3-mailjet.md).
 
@@ -101,7 +101,14 @@ classDiagram
     +findByEmail(email) Elf
     +save(elf) void
   }
+  class PgliteElfAccountMapper {
+    +findByEmail(email) Elf
+    +save(elf) void
+  }
   class SqliteElfDatabase {
+    +elfAccount: Table
+  }
+  class PGlitePostgres {
     +elfAccount: Table
   }
 
@@ -154,7 +161,9 @@ classDiagram
   Elf --> AccountStatus
   Elf --> Email
   ElfAccountMapper ..|> ElfAccountGateway
+  PgliteElfAccountMapper ..|> ElfAccountGateway
   ElfAccountMapper --> SqliteElfDatabase
+  PgliteElfAccountMapper --> PGlitePostgres
   JsonRegisterPresenter --> JsonView
   FastifyJsonView ..|> JsonView
   AcceptanceLetterPresenter --> MailView
@@ -184,8 +193,10 @@ flowchart TB
 
   subgraph DatabaseComponent [Database component]
     ElfAccountMapper
+    PgliteElfAccountMapper
     Argon2CryptoGateway
     PrismaSQLite
+    PGlitePostgres
   end
 
   subgraph JsonPresenterComponent [JSON Presenter component]
@@ -238,7 +249,9 @@ En desarrollo, `MAIL_DRIVER=console` imprime el link de verificación en la term
 | Variable | Descripción |
 |----------|-------------|
 | `PORT` | Puerto API (default 3001) |
-| `DATABASE_URL` | SQLite, ej. `file:./dev.db` |
+| `DATABASE_URL` | SQLite para Prisma, ej. `file:./dev.db` |
+| `DB_DRIVER` | `prisma` (default) o `pglite` |
+| `PGLITE_DATA_DIR` | Directorio opcional de PGlite; vacío = memoria |
 | `JWT_SECRET` | Secreto JWT (mín. 16 caracteres) |
 | `APP_BASE_URL` | URL del frontend para links de correo |
 | `EMAIL_FROM` | Remitente verificado en el proveedor (`resend` o `mailjet`) |
@@ -289,5 +302,5 @@ docs/                # Diagramas y ADR
 ## Principios
 
 - **SRP**: cada clase una responsabilidad (ver `docs/architecture.md`)
-- **OCP**: nuevos canales de salida = nuevos Presenters/Views; Mailjet = `MailjetMailView`; nuevas reglas de formulario = nuevas `ValidationRule` sin tocar `FormPolicy` ni Generators
-  (ver `docs/ocp-parte-2.md`, `docs/ocp-parte-3-mailjet.md`)
+- **OCP**: nuevos canales de salida = nuevos Presenters/Views; Mailjet = `MailjetMailView`; nuevas reglas de formulario = nuevas `ValidationRule` sin tocar `FormPolicy` ni Generators; nuevo motor de DB = `PgliteElfAccountMapper` sin tocar Generators
+  (ver `docs/ocp-parte-2.md`, `docs/ocp-parte-3-mailjet.md`, `docs/ocp-parte-4-db-engine.md`)

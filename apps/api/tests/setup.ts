@@ -5,4 +5,5 @@ beforeEach(() => {
   process.env.DATABASE_URL = "file:./test.db";
   process.env.APP_BASE_URL = "http://localhost:5173";
   process.env.MAIL_DRIVER = "console";
+  process.env.DB_DRIVER = "prisma";
 });

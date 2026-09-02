@@ -1,6 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { PrismaClient } from "@prisma/client";
-import { existsSync, rmSync } from "node:fs";
 import Fastify from "fastify";
 import { z } from "zod";
 import {
@@ -11,13 +9,15 @@ import {
   loadConfig,
 } from "../../src/composition/CompositionRoot.js";
 import {
+  createElfAccountGateway,
+  type ElfAccountStore,
+} from "../../src/database/createElfAccountGateway.js";
+import {
   registerDisplayNameRule,
   registerPasswordRule,
 } from "../../src/entities/validation/registerFormPolicy.js";
 import { ConsoleMailView } from "../../src/views/mail/ConsoleMailView.js";
 import { createFastifyJsonView } from "../../src/views/http/FastifyJsonView.js";
-
-const TEST_DB = "file:./test-e2e-http.db";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -34,25 +34,14 @@ const verifySchema = z.object({
   token: z.string().min(1),
 });
 
-describe("Auth HTTP e2e", () => {
-  let db: PrismaClient;
+describe("Auth HTTP e2e (pglite)", () => {
+  let store: ElfAccountStore;
   let app: ReturnType<typeof Fastify>;
   const config = loadConfig();
 
   beforeAll(async () => {
-    process.env.DATABASE_URL = TEST_DB;
-    if (existsSync("test-e2e-http.db")) {
-      rmSync("test-e2e-http.db");
-    }
-
-    db = new PrismaClient({ datasources: { db: { url: TEST_DB } } });
-    const { execSync } = await import("node:child_process");
-    execSync("npx prisma db push --skip-generate", {
-      cwd: process.cwd(),
-      env: { ...process.env, DATABASE_URL: TEST_DB },
-      stdio: "pipe",
-    });
-
+    store = await createElfAccountGateway({ dbDriver: "pglite" });
+    const accounts = store.gateway;
     ConsoleMailView.reset();
     app = Fastify();
 
@@ -67,7 +56,7 @@ describe("Auth HTTP e2e", () => {
         });
       }
       const view = createFastifyJsonView(reply);
-      const controller = buildRegisterController(db, config, view, new ConsoleMailView());
+      const controller = buildRegisterController(accounts, config, view, new ConsoleMailView());
       await controller.handle(parsed.data);
     });
 
@@ -82,7 +71,7 @@ describe("Auth HTTP e2e", () => {
         });
       }
       const view = createFastifyJsonView(reply);
-      const controller = buildLoginController(db, config, view);
+      const controller = buildLoginController(accounts, config, view);
       await controller.handle(parsed.data);
     });
 
@@ -97,7 +86,7 @@ describe("Auth HTTP e2e", () => {
         });
       }
       const view = createFastifyJsonView(reply);
-      const controller = buildVerifyController(db, view);
+      const controller = buildVerifyController(accounts, view);
       await controller.handle({ rawToken: parsed.data.token });
     });
 
@@ -113,10 +102,7 @@ describe("Auth HTTP e2e", () => {
 
   afterAll(async () => {
     await app.close();
-    await db.$disconnect();
-    if (existsSync("test-e2e-http.db")) {
-      rmSync("test-e2e-http.db");
-    }
+    await store.disconnect();
   });
 
   it("register → verify → login → workshop board over HTTP", async () => {
