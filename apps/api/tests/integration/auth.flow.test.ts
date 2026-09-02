@@ -54,7 +54,7 @@ describe("Auth integration flow", () => {
 
     await registerController.handle({
       email: uniqueEmail,
-      password: "password123",
+      password: "password1234",
       displayName: "Flow Elf",
     });
 
@@ -90,7 +90,7 @@ describe("Auth integration flow", () => {
 
     await loginController.handle({
       email: uniqueEmail,
-      password: "password123",
+      password: "password1234",
     });
     expect(loginDenied?.status).toBe(403);
 
@@ -110,7 +110,7 @@ describe("Auth integration flow", () => {
 
     await loginController2.handle({
       email: uniqueEmail,
-      password: "password123",
+      password: "password1234",
     });
 
     expect(loginOk?.status).toBe(200);

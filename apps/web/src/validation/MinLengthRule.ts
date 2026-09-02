@@ -1,4 +1,4 @@
-import type { ValidationIssue, ValidationRule } from "./ValidationRule.js";
+import type { ValidationIssue, ValidationRule } from "./ValidationRule";
 
 export class MinLengthRule implements ValidationRule {
   constructor(

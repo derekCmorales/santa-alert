@@ -32,6 +32,11 @@ describe("MinLengthRule", () => {
     expect(rule.validate("12345678901 ")).toBeNull();
     expect(rule.validate("12345678901")).not.toBeNull();
   });
+
+  it("exposes a UI hint from the minimum length", () => {
+    const rule = new MinLengthRule("password", 12, "INVALID_PASSWORD", "corta");
+    expect(rule.hint).toBe("Mínimo 12 caracteres");
+  });
 });
 
 describe("FormPolicy", () => {

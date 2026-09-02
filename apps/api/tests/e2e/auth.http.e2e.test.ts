@@ -10,6 +10,10 @@ import {
   buildWorkshopController,
   loadConfig,
 } from "../../src/composition/CompositionRoot.js";
+import {
+  registerDisplayNameRule,
+  registerPasswordRule,
+} from "../../src/entities/validation/registerFormPolicy.js";
 import { ConsoleMailView } from "../../src/views/mail/ConsoleMailView.js";
 import { createFastifyJsonView } from "../../src/views/http/FastifyJsonView.js";
 
@@ -17,8 +21,8 @@ const TEST_DB = "file:./test-e2e-http.db";
 
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
-  displayName: z.string().min(2),
+  password: z.string().min(registerPasswordRule.minLength),
+  displayName: z.string().min(registerDisplayNameRule.minLength),
 });
 
 const loginSchema = z.object({
@@ -117,7 +121,7 @@ describe("Auth HTTP e2e", () => {
 
   it("register → verify → login → workshop board over HTTP", async () => {
     const email = `e2e-${Date.now()}@polo.norte`;
-    const password = "password123";
+    const password = "password1234";
 
     const registerRes = await app.inject({
       method: "POST",
@@ -163,5 +167,33 @@ describe("Auth HTTP e2e", () => {
     });
     expect(boardRes.statusCode).toBe(200);
     expect(boardRes.json().data.greeting).toMatch(/E2E Elf/i);
+  });
+
+  it("rejects register when password is shorter than the policy", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/register",
+      payload: {
+        email: `short-pass-${Date.now()}@polo.norte`,
+        password: "password123",
+        displayName: "Buddy",
+      },
+    });
+    expect(res.statusCode).toBe(422);
+    expect(res.json().success).toBe(false);
+  });
+
+  it("rejects register when display name is shorter than the policy", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/register",
+      payload: {
+        email: `short-name-${Date.now()}@polo.norte`,
+        password: "password1234",
+        displayName: "Al",
+      },
+    });
+    expect(res.statusCode).toBe(422);
+    expect(res.json().success).toBe(false);
   });
 });
