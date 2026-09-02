@@ -8,6 +8,11 @@ import { FestiveCard } from "../components/festive/FestiveCard";
 import { FestiveField } from "../components/festive/FestiveField";
 import { FestiveFormDivider } from "../components/festive/FestiveFormDivider";
 import { PasswordField } from "../components/festive/PasswordField";
+import {
+  registerDisplayNameRule,
+  registerFormPolicy,
+  registerPasswordRule,
+} from "../validation/registerFormPolicy";
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -20,6 +25,13 @@ export function RegisterPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+
+    const issues = registerFormPolicy.validate({ displayName, password });
+    if (issues[0]) {
+      setError(issues[0].message);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -51,7 +63,8 @@ export function RegisterPage() {
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Ej. Buddy el Ayudante"
             required
-            minLength={2}
+            minLength={registerDisplayNameRule.minLength}
+            hint={registerDisplayNameRule.hint}
             autoComplete="name"
           />
           <FestiveField
@@ -67,7 +80,8 @@ export function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={8}
+            minLength={registerPasswordRule.minLength}
+            hint={registerPasswordRule.hint}
             autoComplete="new-password"
           />
 

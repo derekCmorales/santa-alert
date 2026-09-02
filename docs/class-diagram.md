@@ -165,8 +165,19 @@ classDiagram
 
 ## OCP
 
+### Parte 1 — canales de salida
+
 - Nuevo canal de correo → `implements MailView`
 - Nuevo formato de API → `implements RegisterElfPresenter` o nuevo Presenter JSON
 - Nuevo almacén → `implements ElfAccountGateway`
 
 Los Generators permanecen cerrados a modificación.
+
+### Parte 2 — reglas de registro
+
+- Nueva política de campo → `implements ValidationRule` (hoy `MinLengthRule`)
+- Cambiar umbral de nombre o contraseña → composición en `registerFormPolicy` (API y web)
+
+`FormPolicy`, `RegisterPage` y `RegisterElfGenerator` permanecen cerrados a modificación.
+
+Documentación: [`docs/ocp-parte-2.md`](ocp-parte-2.md).

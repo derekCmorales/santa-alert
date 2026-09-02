@@ -8,7 +8,7 @@ interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
 
 export function PasswordField({
   label = "Contraseña",
-  hint = "Mínimo 8 caracteres",
+  hint,
   id,
   className,
   ...props

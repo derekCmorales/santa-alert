@@ -46,6 +46,10 @@ Añadir `ConsoleMailView` (dev) o cambiar a SendGrid = **nueva View**, sin modif
 
 `JsonLoginPresenter` + `JoseSessionTokenIssuer` emiten el JWT en el View Model. Cambiar a cookies httpOnly = nuevo Presenter.
 
+### Validación de registro (parte 2)
+
+`FormPolicy` + `MinLengthRule` (`implements ValidationRule`). Cambiar umbrales o añadir una regla = composición, sin abrir el Generator ni el formulario. Detalle en [`ocp-parte-2.md`](ocp-parte-2.md).
+
 ## Flujo de registro
 
 ```mermaid

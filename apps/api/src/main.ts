@@ -11,12 +11,16 @@ import {
   buildWorkshopController,
   loadConfig,
 } from "./composition/CompositionRoot.js";
+import {
+  registerDisplayNameRule,
+  registerPasswordRule,
+} from "./entities/validation/registerFormPolicy.js";
 import { createFastifyJsonView } from "./views/http/FastifyJsonView.js";
 
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
-  displayName: z.string().min(2),
+  password: z.string().min(registerPasswordRule.minLength),
+  displayName: z.string().min(registerDisplayNameRule.minLength),
 });
 
 const loginSchema = z.object({

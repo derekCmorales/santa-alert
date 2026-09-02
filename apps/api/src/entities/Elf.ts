@@ -3,8 +3,11 @@ import { AccountNotVerifiedError } from "./errors/AccountNotVerifiedError.js";
 import { ValidationError } from "./errors/ValidationError.js";
 import { Email } from "./Email.js";
 import { ElfId } from "./ElfId.js";
+import {
+  registerDisplayNameRule,
+  registerPasswordRule,
+} from "./validation/registerFormPolicy.js";
 
-const MIN_PASSWORD_LENGTH = 8;
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface ElfProps {
@@ -27,10 +30,11 @@ export class Elf {
     verificationTokenHash: string;
     verificationExpiresAt: Date;
   }): Elf {
-    const name = input.displayName.trim();
-    if (name.length < 2) {
-      throw new ValidationError("INVALID_NAME", "El nombre del elfo es demasiado corto.");
+    const nameIssue = registerDisplayNameRule.validate(input.displayName);
+    if (nameIssue) {
+      throw new ValidationError(nameIssue.code, nameIssue.message);
     }
+    const name = input.displayName.trim();
 
     return new Elf({
       id: ElfId.create(),
@@ -48,11 +52,9 @@ export class Elf {
   }
 
   static validatePassword(plain: string): void {
-    if (plain.length < MIN_PASSWORD_LENGTH) {
-      throw new ValidationError(
-        "INVALID_PASSWORD",
-        "La contraseña debe tener al menos 8 caracteres.",
-      );
+    const issue = registerPasswordRule.validate(plain);
+    if (issue) {
+      throw new ValidationError(issue.code, issue.message);
     }
   }
 

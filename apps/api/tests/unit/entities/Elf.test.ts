@@ -65,6 +65,26 @@ describe("Elf entity", () => {
       elf.matchesVerificationTokenHash("token-hash", new Date(expires.getTime() + 1)),
     ).toBe(false);
   });
+
+  it("rejects display names shorter than 3 characters", () => {
+    expect(() =>
+      Elf.register({
+        email,
+        displayName: "Al",
+        passwordHash: "hash",
+        verificationTokenHash: "token-hash",
+        verificationExpiresAt: expires,
+      }),
+    ).toThrow(/corto/i);
+  });
+
+  it("rejects passwords shorter than 12 characters", () => {
+    expect(() => Elf.validatePassword("password123")).toThrow(/12 caracteres/);
+  });
+
+  it("accepts a 12-character password", () => {
+    expect(() => Elf.validatePassword("password1234")).not.toThrow();
+  });
 });
 
 describe("Email value object", () => {

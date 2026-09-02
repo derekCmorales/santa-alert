@@ -62,7 +62,7 @@ describe("RegisterElfGenerator", () => {
   it("accepts new elf and stores hashed token not raw", async () => {
     const response = await generator.execute({
       email: "nuevo@polo.norte",
-      password: "password123",
+      password: "password1234",
       displayName: "Jingles",
     });
 
@@ -78,17 +78,37 @@ describe("RegisterElfGenerator", () => {
   it("returns DUPLICATE_SILENT without token for existing email", async () => {
     await generator.execute({
       email: "dup@polo.norte",
-      password: "password123",
+      password: "password1234",
       displayName: "Dup",
     });
 
     const response = await generator.execute({
       email: "dup@polo.norte",
-      password: "otherpass99",
+      password: "otherpass99xx",
       displayName: "Other",
     });
 
     expect(response.outcome).toBe("DUPLICATE_SILENT");
     expect(response.rawVerificationToken).toBeUndefined();
+  });
+
+  it("rejects passwords below the register policy", async () => {
+    await expect(
+      generator.execute({
+        email: "corto@polo.norte",
+        password: "password123",
+        displayName: "Jingles",
+      }),
+    ).rejects.toThrow(/12 caracteres/);
+  });
+
+  it("rejects display names below the register policy", async () => {
+    await expect(
+      generator.execute({
+        email: "nombre@polo.norte",
+        password: "password1234",
+        displayName: "Al",
+      }),
+    ).rejects.toThrow(/corto/i);
   });
 });

@@ -8,6 +8,7 @@
     "build": "pnpm run -r build",
     "test": "pnpm --filter @north-pole/api test",
     "test:unit": "pnpm --filter @north-pole/api test:unit",
+    "test:web": "pnpm --filter @north-pole/web test",
     "test:integration": "pnpm --filter @north-pole/api test:integration",
     "test:e2e": "pnpm --filter @north-pole/api test:e2e",
     "db:push": "pnpm --filter @north-pole/api db:push"
