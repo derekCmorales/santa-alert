@@ -9,10 +9,10 @@ Clean Architecture (Fig. 8.2 / 8.3 de *Clean Architecture*):
 - **Interactor**: reglas de negocio (`RegisterElfGenerator`, `VerifyElfGenerator`, `LoginElfGenerator`)
 - **Controller**: orquesta Request/Response `<DS>` y presenters
 - **Presenters**: JSON (web) y Carta de Aceptación (correo)
-- **Views**: Fastify HTTP, Resend, consola (dev)
+- **Views**: Fastify HTTP, Resend, Mailjet, consola (dev)
 - **Database**: `ElfAccountMapper` + SQLite
 
-Documentación detallada en [`docs/`](docs/). OCP parte 1 (canales) y parte 2 (validación): [`docs/ocp-parte-2.md`](docs/ocp-parte-2.md).
+Documentación detallada en [`docs/`](docs/). OCP parte 1 y 2: [`docs/ocp-parte-2.md`](docs/ocp-parte-2.md). OCP parte 3 (Mailjet): [`docs/ocp-parte-3-mailjet.md`](docs/ocp-parte-3-mailjet.md).
 
 ### Flujo de registro (secuencia)
 
@@ -137,6 +137,9 @@ classDiagram
   class ResendMailView {
     +render(model) void
   }
+  class MailjetMailView {
+    +render(model) void
+  }
   class ConsoleMailView {
     +render(model) void
   }
@@ -156,6 +159,7 @@ classDiagram
   FastifyJsonView ..|> JsonView
   AcceptanceLetterPresenter --> MailView
   ResendMailView ..|> MailView
+  MailjetMailView ..|> MailView
   ConsoleMailView ..|> MailView
 ```
 
@@ -197,6 +201,7 @@ flowchart TB
   subgraph ViewLayer [View layer]
     FastifyJsonView
     ResendMailView
+    MailjetMailView
     ConsoleMailView
     ReactApp
   end
@@ -236,9 +241,11 @@ En desarrollo, `MAIL_DRIVER=console` imprime el link de verificación en la term
 | `DATABASE_URL` | SQLite, ej. `file:./dev.db` |
 | `JWT_SECRET` | Secreto JWT (mín. 16 caracteres) |
 | `APP_BASE_URL` | URL del frontend para links de correo |
-| `EMAIL_FROM` | Remitente verificado en Resend |
+| `EMAIL_FROM` | Remitente verificado en el proveedor (`resend` o `mailjet`) |
 | `RESEND_API_KEY` | API key de Resend |
-| `MAIL_DRIVER` | `console` o `resend` |
+| `MAILJET_API_KEY` | Clave pública de Mailjet |
+| `MAILJET_API_SECRET` | Clave privada de Mailjet |
+| `MAIL_DRIVER` | `console`, `resend` o `mailjet` |
 
 ## Flujo de verificación
 
@@ -282,5 +289,5 @@ docs/                # Diagramas y ADR
 ## Principios
 
 - **SRP**: cada clase una responsabilidad (ver `docs/architecture.md`)
-- **OCP**: nuevos canales de salida = nuevos Presenters/Views; nuevas reglas de formulario = nuevas `ValidationRule` sin tocar `FormPolicy` ni Generators
-  (ver `docs/ocp-parte-2.md`)
+- **OCP**: nuevos canales de salida = nuevos Presenters/Views; Mailjet = `MailjetMailView`; nuevas reglas de formulario = nuevas `ValidationRule` sin tocar `FormPolicy` ni Generators
+  (ver `docs/ocp-parte-2.md`, `docs/ocp-parte-3-mailjet.md`)

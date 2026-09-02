@@ -32,7 +32,7 @@ Rechazado: el correo es un canal de salida (Print/PDF en el libro), no persisten
 **Positivas**
 
 - Tests del Generator con gateways fake, sin red ni DB.
-- Cambiar Resend → Console o SendGrid sin tocar reglas de negocio.
+- Cambiar Resend → Console, Mailjet o SendGrid sin tocar reglas de negocio.
 - Diagramas de clase y componente mapean 1:1 al código.
 
 **Negativas**
@@ -45,7 +45,7 @@ Rechazado: el correo es un canal de salida (Print/PDF en el libro), no persisten
 | Principio | Evidencia |
 |-----------|-----------|
 | SRP | `AcceptanceLetterPresenter` solo formatea carta; `ElfAccountMapper` solo persiste |
-| OCP | `ConsoleMailView` y `ResendMailView` intercambiables vía `MailView` |
+| OCP | `ConsoleMailView`, `ResendMailView` y `MailjetMailView` intercambiables vía `MailView` |
 
 ## Plantilla de correo
 

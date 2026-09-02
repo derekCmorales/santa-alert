@@ -17,7 +17,7 @@ El núcleo estable es el **Interactor** (Generators + entidades). Todo lo demás
 | **Presenter `<I>`** | Contrato de salida definido por el Controller | `RegisterElfPresenter` |
 | **Presenter concreto** | Formatea Response `<DS>` → View Model `<DS>` | `JsonRegisterPresenter`, `AcceptanceLetterPresenter` |
 | **View `<I>`** | Canal de entrega | `JsonView`, `MailView` |
-| **View concreta** | Implementación tecnológica | `FastifyJsonView`, `ResendMailView` |
+| **View concreta** | Implementación tecnológica | `FastifyJsonView`, `ResendMailView`, `MailjetMailView` |
 | **Mapper** | Traduce filas DB ↔ entidades | `ElfAccountMapper` |
 
 ## Regla de dependencia
@@ -36,9 +36,9 @@ El Interactor **nunca** importa Fastify, Prisma, Resend ni `jose`.
 
 ### Canal Print (Carta)
 
-`AcceptanceLetterPresenter` + `ResendMailView` envían la Carta de Aceptación.
+`AcceptanceLetterPresenter` + `MailView` envían la Carta de Aceptación. Los adapters actuales son `ResendMailView`, `MailjetMailView` y `ConsoleMailView`.
 
-Añadir `ConsoleMailView` (dev) o cambiar a SendGrid = **nueva View**, sin modificar `RegisterElfGenerator`.
+Añadir un proveedor (Mailjet, SendGrid, consola) = **nueva View**, sin modificar `RegisterElfGenerator`. Detalle: [`ocp-parte-3-mailjet.md`](ocp-parte-3-mailjet.md).
 
 ### JWT fuera del Interactor
 
@@ -98,6 +98,7 @@ stateDiagram-v2
 | Entities | `tests/unit/entities/` | Sin I/O |
 | Generators | `tests/unit/generators/` | Gateways fake |
 | Presenters | `tests/unit/presenters/` | Views fake |
+| Mail views | `tests/unit/views/` | `send` fake / `fetch` stub |
 | Integración | `tests/integration/` | SQLite + ConsoleMailView |
 
 ## Plantilla de correo

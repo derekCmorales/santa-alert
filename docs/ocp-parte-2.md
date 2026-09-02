@@ -73,8 +73,11 @@ El **Controller** recibe el Response `<DS>` y recorre los Presenters. Añadir un
 | Extensión | Qué se crea | Qué NO se toca |
 |-----------|-------------|----------------|
 | Correo en consola (dev) | `ConsoleMailView` | Generator, entidades |
+| Mailjet en vez de (o junto a) Resend | `MailjetMailView implements MailView` | Generator, Presenter de carta |
 | SendGrid en vez de Resend | `SendGridMailView implements MailView` | Generator, Presenter de carta |
 | Cookies httpOnly en vez de JWT | nuevo Presenter de login | `LoginElfGenerator` |
+
+La extensión Mailjet está implementada en [`ocp-parte-3-mailjet.md`](ocp-parte-3-mailjet.md).
 
 Diagramas 1:1 con el código: [`class-diagram.md`](class-diagram.md), [`component-diagram.md`](component-diagram.md), [`adr/0001-clean-architecture-boundaries.md`](adr/0001-clean-architecture-boundaries.md).
 

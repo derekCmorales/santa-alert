@@ -101,6 +101,9 @@ classDiagram
   class ResendMailView {
     +render(model) void
   }
+  class MailjetMailView {
+    +render(model) void
+  }
   class ConsoleMailView {
     +render(model) void
   }
@@ -120,6 +123,7 @@ classDiagram
   FastifyJsonView ..|> JsonView
   AcceptanceLetterPresenter --> MailView
   ResendMailView ..|> MailView
+  MailjetMailView ..|> MailView
   ConsoleMailView ..|> MailView
 ```
 
@@ -159,6 +163,7 @@ classDiagram
 | `AcceptanceLetterPresenter` | Copy/HTML de la carta |
 | `acceptanceLetterTemplate.ts` | Diseño visual del correo |
 | `ResendMailView` | SDK Resend |
+| `MailjetMailView` | Send API v3.1 (Mailjet) |
 | `JsonRegisterPresenter` | Formato JSON / códigos HTTP |
 | `ElfAccountMapper` | Esquema SQL |
 | `RegisterElfController` | Cableado request + presenters |
@@ -167,11 +172,13 @@ classDiagram
 
 ### Parte 1 — canales de salida
 
-- Nuevo canal de correo → `implements MailView`
+- Nuevo canal de correo → `implements MailView` (`ConsoleMailView`, `ResendMailView`, `MailjetMailView`)
 - Nuevo formato de API → `implements RegisterElfPresenter` o nuevo Presenter JSON
 - Nuevo almacén → `implements ElfAccountGateway`
 
 Los Generators permanecen cerrados a modificación.
+
+Documentación: [`docs/ocp-parte-3-mailjet.md`](ocp-parte-3-mailjet.md).
 
 ### Parte 2 — reglas de registro
 
@@ -181,3 +188,12 @@ Los Generators permanecen cerrados a modificación.
 `FormPolicy`, `RegisterPage` y `RegisterElfGenerator` permanecen cerrados a modificación.
 
 Documentación: [`docs/ocp-parte-2.md`](ocp-parte-2.md).
+
+### Parte 3 — proveedor Mailjet
+
+- Nuevo proveedor de correo → `MailjetMailView implements MailView`
+- `createMailView` es el único `switch` de creación
+
+`RegisterElfGenerator` y `AcceptanceLetterPresenter` permanecen cerrados a modificación.
+
+Documentación: [`docs/ocp-parte-3-mailjet.md`](ocp-parte-3-mailjet.md).
