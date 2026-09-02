@@ -12,7 +12,7 @@ Clean Architecture (Fig. 8.2 / 8.3 de *Clean Architecture*):
 - **Views**: Fastify HTTP, Resend, consola (dev)
 - **Database**: `ElfAccountMapper` + SQLite
 
-Documentación detallada en [`docs/`](docs/).
+Documentación detallada en [`docs/`](docs/). OCP parte 1 (canales) y parte 2 (validación): [`docs/ocp-parte-2.md`](docs/ocp-parte-2.md).
 
 ### Flujo de registro (secuencia)
 
@@ -282,4 +282,5 @@ docs/                # Diagramas y ADR
 ## Principios
 
 - **SRP**: cada clase una responsabilidad (ver `docs/architecture.md`)
-- **OCP**: nuevos canales de salida = nuevos Presenters/Views sin tocar Generators
+- **OCP**: nuevos canales de salida = nuevos Presenters/Views; nuevas reglas de formulario = nuevas `ValidationRule` sin tocar `FormPolicy` ni Generators
+  (ver `docs/ocp-parte-2.md`)
