@@ -40,6 +40,10 @@ El Interactor **nunca** importa Fastify, Prisma, Resend ni `jose`.
 
 Añadir un proveedor (Mailjet, SendGrid, consola) = **nueva View**, sin modificar `RegisterElfGenerator`. Detalle: [`ocp-parte-3-mailjet.md`](ocp-parte-3-mailjet.md).
 
+### Persistencia (parte 4)
+
+`ElfAccountGateway` + `ElfAccountMapper` (Prisma/SQLite) y `PgliteElfAccountMapper` (PostgreSQL embebido). Añadir un motor = **nuevo mapper**, sin modificar los Generators. Detalle: [`ocp-parte-4-db-engine.md`](ocp-parte-4-db-engine.md).
+
 ### JWT fuera del Interactor
 
 `LoginElfGenerator` solo decide `AUTHENTICATED | NOT_VERIFIED | INVALID`.
@@ -99,7 +103,7 @@ stateDiagram-v2
 | Generators | `tests/unit/generators/` | Gateways fake |
 | Presenters | `tests/unit/presenters/` | Views fake |
 | Mail views | `tests/unit/views/` | `send` fake / `fetch` stub |
-| Integración | `tests/integration/` | SQLite + ConsoleMailView |
+| Integración | `tests/integration/` | Prisma + PGlite + ConsoleMailView |
 
 ## Plantilla de correo
 

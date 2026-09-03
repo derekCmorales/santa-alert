@@ -39,8 +39,10 @@ flowchart BT
 
   subgraph database [Database]
     ElfAccountMapper
+    PgliteElfAccountMapper
     Argon2CryptoGateway
     SqliteElfDatabase
+    PGlitePostgres
   end
 
   subgraph auth_infra [Auth infra — borde]
@@ -71,10 +73,14 @@ flowchart BT
   ElfAccountMapper --> RegisterElfGenerator
   ElfAccountMapper --> LoginElfGenerator
   ElfAccountMapper --> VerifyElfGenerator
+  PgliteElfAccountMapper --> RegisterElfGenerator
+  PgliteElfAccountMapper --> LoginElfGenerator
+  PgliteElfAccountMapper --> VerifyElfGenerator
   Argon2CryptoGateway --> RegisterElfGenerator
   Argon2CryptoGateway --> LoginElfGenerator
   Argon2CryptoGateway --> VerifyElfGenerator
   SqliteElfDatabase --> ElfAccountMapper
+  PGlitePostgres --> PgliteElfAccountMapper
 
   JoseSessionTokenIssuer --> JsonLoginPresenter
   JoseSessionTokenVerifier --> WorkshopController
@@ -111,8 +117,10 @@ flowchart TB
 
   subgraph DatabaseComponent [Database component]
     ElfAccountMapper
+    PgliteElfAccountMapper
     Argon2CryptoGateway
     PrismaSQLite
+    PGlitePostgres
   end
 
   subgraph JsonPresenterComponent [JSON Presenter component]

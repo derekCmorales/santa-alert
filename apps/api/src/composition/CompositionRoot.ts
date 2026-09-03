@@ -1,10 +1,10 @@
-import { PrismaClient } from "@prisma/client";
 import { RegisterElfController } from "../controllers/register-elf/RegisterElfController.js";
 import { LoginElfController } from "../controllers/login-elf/LoginElfController.js";
 import { VerifyElfController } from "../controllers/verify-elf/VerifyElfController.js";
 import { WorkshopController } from "../controllers/workshop/WorkshopController.js";
 import { Argon2CryptoGateway } from "../database/argon2/Argon2CryptoGateway.js";
-import { ElfAccountMapper } from "../database/ElfAccountMapper.js";
+import { parseDbDriver, type DbDriver } from "../database/createElfAccountGateway.js";
+import type { ElfAccountGateway } from "../interactors/shared/ElfAccountGateway.js";
 import {
   JoseSessionTokenIssuer,
 } from "../infrastructure/auth/JoseSessionTokenIssuer.js";
@@ -20,6 +20,7 @@ import { JsonVerifyPresenter } from "../presenters/json/JsonVerifyPresenter.js";
 import { JsonWorkshopPresenter } from "../presenters/json/JsonWorkshopPresenter.js";
 import { createMailView, parseMailDriver, type MailDriver } from "../views/mail/createMailView.js";
 import type { MailView } from "../presenters/acceptance-letter/MailView.js";
+import type { JsonView } from "../presenters/json/JsonView.js";
 
 export interface AppConfig {
   jwtSecret: string;
@@ -29,6 +30,8 @@ export interface AppConfig {
   mailjetApiKey?: string;
   mailjetApiSecret?: string;
   mailDriver: MailDriver;
+  dbDriver: DbDriver;
+  pgliteDataDir?: string;
 }
 
 export interface AppControllers {
@@ -39,12 +42,12 @@ export interface AppControllers {
 }
 
 export function buildControllers(
-  db: PrismaClient,
+  accounts: ElfAccountGateway,
   config: AppConfig,
   mailViewOverride?: MailView,
 ): AppControllers {
   const crypto = new Argon2CryptoGateway();
-  const gateway = new ElfAccountMapper(db);
+  const gateway = accounts;
 
   const registerGenerator = new RegisterElfGenerator(gateway, crypto);
   const verifyGenerator = new VerifyElfGenerator(gateway, crypto);
@@ -84,20 +87,20 @@ export function buildControllers(
 }
 
 export function buildRegisterController(
-  db: PrismaClient,
+  accounts: ElfAccountGateway,
   config: AppConfig,
-  jsonView: { render: (m: unknown) => void },
+  jsonView: JsonView,
   mailView?: MailView,
 ): RegisterElfController {
   const crypto = new Argon2CryptoGateway();
-  const gateway = new ElfAccountMapper(db);
+  const gateway = accounts;
   const registerGenerator = new RegisterElfGenerator(gateway, crypto);
 
   const mail = mailView ?? createMailView(config);
 
   return new RegisterElfController(
     registerGenerator,
-    new JsonRegisterPresenter(jsonView as never),
+    new JsonRegisterPresenter(jsonView),
     new AcceptanceLetterPresenter(mail, {
       appBaseUrl: config.appBaseUrl,
       emailFrom: config.emailFrom,
@@ -106,38 +109,38 @@ export function buildRegisterController(
 }
 
 export function buildLoginController(
-  db: PrismaClient,
+  accounts: ElfAccountGateway,
   config: AppConfig,
-  jsonView: { render: (m: unknown) => void },
+  jsonView: JsonView,
 ): LoginElfController {
   const crypto = new Argon2CryptoGateway();
-  const gateway = new ElfAccountMapper(db);
+  const gateway = accounts;
   const loginGenerator = new LoginElfGenerator(gateway, crypto);
   const tokenIssuer = new JoseSessionTokenIssuer(config.jwtSecret);
 
   return new LoginElfController(
     loginGenerator,
-    new JsonLoginPresenter(jsonView as never, tokenIssuer),
+    new JsonLoginPresenter(jsonView, tokenIssuer),
   );
 }
 
 export function buildVerifyController(
-  db: PrismaClient,
-  jsonView: { render: (m: unknown) => void },
+  accounts: ElfAccountGateway,
+  jsonView: JsonView,
 ): VerifyElfController {
   const crypto = new Argon2CryptoGateway();
-  const gateway = new ElfAccountMapper(db);
+  const gateway = accounts;
   const verifyGenerator = new VerifyElfGenerator(gateway, crypto);
 
   return new VerifyElfController(
     verifyGenerator,
-    new JsonVerifyPresenter(jsonView as never),
+    new JsonVerifyPresenter(jsonView),
   );
 }
 
 export function buildWorkshopController(
   config: AppConfig,
-  jsonView: { render: (m: unknown) => void },
+  jsonView: JsonView,
 ): WorkshopController {
   const tokenIssuer = new JoseSessionTokenIssuer(config.jwtSecret);
   const tokenVerifier = new JoseSessionTokenVerifier(tokenIssuer);
@@ -145,7 +148,7 @@ export function buildWorkshopController(
 
   return new WorkshopController(
     workshopGenerator,
-    new JsonWorkshopPresenter(jsonView as never),
+    new JsonWorkshopPresenter(jsonView),
     tokenVerifier,
   );
 }
@@ -159,6 +162,8 @@ export function loadConfig(): AppConfig {
   const mailDriver = parseMailDriver(process.env.MAIL_DRIVER);
   const mailjetApiKey = process.env.MAILJET_API_KEY;
   const mailjetApiSecret = process.env.MAILJET_API_SECRET;
+  const dbDriver = parseDbDriver(process.env.DB_DRIVER);
+  const pgliteDataDir = process.env.PGLITE_DATA_DIR;
 
   if (mailDriver === "mailjet" && (!mailjetApiKey || !mailjetApiSecret)) {
     throw new Error(
@@ -174,5 +179,7 @@ export function loadConfig(): AppConfig {
     mailjetApiKey,
     mailjetApiSecret,
     mailDriver,
+    dbDriver,
+    pgliteDataDir: pgliteDataDir || undefined,
   };
 }

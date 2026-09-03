@@ -33,6 +33,7 @@ Rechazado: el correo es un canal de salida (Print/PDF en el libro), no persisten
 
 - Tests del Generator con gateways fake, sin red ni DB.
 - Cambiar Resend → Console, Mailjet o SendGrid sin tocar reglas de negocio.
+- Cambiar Prisma/SQLite → PGlite (u otro `implements ElfAccountGateway`) sin tocar Generators.
 - Diagramas de clase y componente mapean 1:1 al código.
 
 **Negativas**
@@ -45,7 +46,7 @@ Rechazado: el correo es un canal de salida (Print/PDF en el libro), no persisten
 | Principio | Evidencia |
 |-----------|-----------|
 | SRP | `AcceptanceLetterPresenter` solo formatea carta; `ElfAccountMapper` solo persiste |
-| OCP | `ConsoleMailView`, `ResendMailView` y `MailjetMailView` intercambiables vía `MailView` |
+| OCP | `ConsoleMailView`, `ResendMailView` y `MailjetMailView` intercambiables vía `MailView`; `ElfAccountMapper` y `PgliteElfAccountMapper` vía `ElfAccountGateway` |
 
 ## Plantilla de correo
 

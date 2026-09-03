@@ -1,7 +1,6 @@
 import "dotenv/config";
 import fastifyCors from "@fastify/cors";
 import fastifyRateLimit from "@fastify/rate-limit";
-import { PrismaClient } from "@prisma/client";
 import Fastify from "fastify";
 import { z } from "zod";
 import {
@@ -11,6 +10,7 @@ import {
   buildWorkshopController,
   loadConfig,
 } from "./composition/CompositionRoot.js";
+import { createElfAccountGateway } from "./database/createElfAccountGateway.js";
 import {
   registerDisplayNameRule,
   registerPasswordRule,
@@ -34,7 +34,8 @@ const verifySchema = z.object({
 
 async function main() {
   const config = loadConfig();
-  const db = new PrismaClient();
+  const store = await createElfAccountGateway(config);
+  const accounts = store.gateway;
   const app = Fastify({ logger: true });
 
   await app.register(fastifyCors, {
@@ -61,7 +62,7 @@ async function main() {
     }
 
     const view = createFastifyJsonView(reply);
-    const controller = buildRegisterController(db, config, view);
+    const controller = buildRegisterController(accounts, config, view);
     await controller.handle(parsed.data);
   });
 
@@ -77,7 +78,7 @@ async function main() {
     }
 
     const view = createFastifyJsonView(reply);
-    const controller = buildLoginController(db, config, view);
+    const controller = buildLoginController(accounts, config, view);
     await controller.handle(parsed.data);
   });
 
@@ -93,7 +94,7 @@ async function main() {
     }
 
     const view = createFastifyJsonView(reply);
-    const controller = buildVerifyController(db, view);
+    const controller = buildVerifyController(accounts, view);
     await controller.handle({ rawToken: parsed.data.token });
   });
 
@@ -106,6 +107,18 @@ async function main() {
 
   const port = Number(process.env.PORT ?? 3001);
   await app.listen({ port, host: "0.0.0.0" });
+
+  const shutdown = async () => {
+    await app.close();
+    await store.disconnect();
+    process.exit(0);
+  };
+  process.on("SIGTERM", () => {
+    void shutdown();
+  });
+  process.on("SIGINT", () => {
+    void shutdown();
+  });
 }
 
 main().catch((error) => {

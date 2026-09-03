@@ -65,7 +65,14 @@ classDiagram
     +findByEmail(email) Elf
     +save(elf) void
   }
+  class PgliteElfAccountMapper {
+    +findByEmail(email) Elf
+    +save(elf) void
+  }
   class SqliteElfDatabase {
+    +elfAccount: Table
+  }
+  class PGlitePostgres {
     +elfAccount: Table
   }
 
@@ -118,7 +125,9 @@ classDiagram
   Elf --> AccountStatus
   Elf --> Email
   ElfAccountMapper ..|> ElfAccountGateway
+  PgliteElfAccountMapper ..|> ElfAccountGateway
   ElfAccountMapper --> SqliteElfDatabase
+  PgliteElfAccountMapper --> PGlitePostgres
   JsonRegisterPresenter --> JsonView
   FastifyJsonView ..|> JsonView
   AcceptanceLetterPresenter --> MailView
@@ -165,7 +174,8 @@ classDiagram
 | `ResendMailView` | SDK Resend |
 | `MailjetMailView` | Send API v3.1 (Mailjet) |
 | `JsonRegisterPresenter` | Formato JSON / códigos HTTP |
-| `ElfAccountMapper` | Esquema SQL |
+| `ElfAccountMapper` | Esquema SQL Prisma/SQLite |
+| `PgliteElfAccountMapper` | Esquema SQL PGlite (PostgreSQL embebido) |
 | `RegisterElfController` | Cableado request + presenters |
 
 ## OCP
@@ -174,7 +184,7 @@ classDiagram
 
 - Nuevo canal de correo → `implements MailView` (`ConsoleMailView`, `ResendMailView`, `MailjetMailView`)
 - Nuevo formato de API → `implements RegisterElfPresenter` o nuevo Presenter JSON
-- Nuevo almacén → `implements ElfAccountGateway`
+- Nuevo almacén → `implements ElfAccountGateway` (`ElfAccountMapper`, `PgliteElfAccountMapper`)
 
 Los Generators permanecen cerrados a modificación.
 
@@ -197,3 +207,12 @@ Documentación: [`docs/ocp-parte-2.md`](ocp-parte-2.md).
 `RegisterElfGenerator` y `AcceptanceLetterPresenter` permanecen cerrados a modificación.
 
 Documentación: [`docs/ocp-parte-3-mailjet.md`](ocp-parte-3-mailjet.md).
+
+### Parte 4 — motor de persistencia
+
+- Nuevo motor → `PgliteElfAccountMapper implements ElfAccountGateway`
+- `createElfAccountGateway` es el único `switch` de creación
+
+Los Generators permanecen cerrados a modificación.
+
+Documentación: [`docs/ocp-parte-4-db-engine.md`](ocp-parte-4-db-engine.md).
